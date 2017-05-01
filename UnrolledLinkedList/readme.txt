@@ -1,0 +1,3 @@
+The technical screen for Indeed.com involved implementing some operations for an UnrolledLinkedList (https://en.wikipedia.org/wiki/Unrolled_linked_list).  That was my first significant exposure to this data structure, and since it didn't go as well as I would have liked I decided to come home and work on implementing the same operations outside the context of an interview.
+
+For the moment this is an incomplete, and somewhat simplified, implementation in that it doesn't handle removes and it only adds new nodes when an insert is attempted into an already full existing node rather than the more typical approach of adding a new node as soon as the appropriate existing node gets to half filled.
