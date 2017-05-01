@@ -11,7 +11,7 @@ int[][] input = new int[][] {{1,1,1,1,1,1,1,1},
 							 {1,1,0,0,1,1,1,1},
 							 {1,1,1,1,1,1,1,1}};
 							 
-should find the largest rectangle having an area of 9, with its upper-left corner at row=1, col=0.
+The algorithm should find the largest rectangle as having an area of 9, with its upper-left corner at row=1, col=0.
 
 Solution:
 
