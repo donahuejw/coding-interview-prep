@@ -1,45 +1,20 @@
+import java.util.*;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.List;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.BitSet;
-import java.util.Set;
-import java.util.HashSet;
+
 import com.google.common.base.Preconditions;
 
-public class BuildOrderManager {
-  private static final int ASCII_VALUE_A = 97;
+public class DependencyResolver {
 
-  public static void main(String[] args) {
-    char[] projects = new char[] {'a','b','c','d','e','f','g','h'};
-    List<ProjectPair> dependencies = new LinkedList<>();
-    dependencies.add(new ProjectPair('d','g'));
-    dependencies.add(new ProjectPair('f','c'));
-    dependencies.add(new ProjectPair('f','b'));
-    dependencies.add(new ProjectPair('c','a'));
-    dependencies.add(new ProjectPair('f','a'));
-    dependencies.add(new ProjectPair('b','a'));
-    dependencies.add(new ProjectPair('b','h'));
-    dependencies.add(new ProjectPair('b','e'));
-    dependencies.add(new ProjectPair('a','e'));
+  public static DependencyResolver INSTANCE = new DependencyResolver();
 
+  private DependencyResolver(){}
 
-    List<Character> buildOrder = computeBuildOrder(projects, dependencies);
-    if (!buildOrder.isEmpty()) {
-      System.out.println("valid build order is:");
-      buildOrder.forEach(c -> System.out.println(c));
-    } else {
-      System.out.println("No valid build order could be determined");
-    }
-  }
-
-  private static List<Character> computeBuildOrder(char[] projects, List<ProjectPair> projectDependencies) {
-    // algorithm assumes all projects chars are consecutive, so validate
-    for (int idx = 0; idx<projects.length-1; idx++) {
-      int currentProject = (int) projects[idx];
-      int nextProject = (int) projects[idx+1];
-      Preconditions.checkArgument((nextProject - currentProject) == 1, "Expecting project letters to be consecutive");
+  public List<Character> computeValidOrder(char[] projects, List<ProjectPair> projectDependencies) {
+    // To process the list of dependencies we'll need to map each project to its index in the adjacency matrix
+    // so build a map here for that purpose
+    Map<Character, Integer> projectIndices = new HashMap<>();
+    for (int i=0; i<projects.length; i++) {
+      projectIndices.put(projects[i], i);
     }
 
     // build the matrix of dependencies
@@ -50,21 +25,23 @@ public class BuildOrderManager {
 
     BitSet projectsWithUnmetDependencies = new BitSet(projects.length);
     projectDependencies.forEach(pp -> {
-      int dependencyIndex = ((int) pp.dependency) % ASCII_VALUE_A;
-      int dependentProjIndex = ((int) pp.dependentProject) % ASCII_VALUE_A;
+      verifyDependency(pp, projectIndices);
+      int dependencyIndex = projectIndices.get(pp.dependency);
+      int dependentProjIndex = projectIndices.get(pp.dependentProject);
       dependencyMatrix[dependentProjIndex].set(dependencyIndex);
       projectsWithUnmetDependencies.set(dependentProjIndex);
     });
 
-    // projects that have no dependencies can be added to the build order to start, since they can be built in any order
-    List<Character> buildOrder = new LinkedList<>();
+    // All projects that have no dependencies can be added to the build
+    // order to start, since they can be built in any order
+    List<Character> validOrder = new LinkedList<>();
     for (int idx = 0; idx<projects.length; idx++) {
       if (!projectsWithUnmetDependencies.get(idx)) {
-        buildOrder.add(projects[idx]);
+        validOrder.add(projects[idx]);
       }
     }
 
-    if (!buildOrder.isEmpty()) { //i.e., we have at least one project to build
+    if (!validOrder.isEmpty()) { //i.e., we have at least one project to build
       boolean noProjectsCanBeAddedToBuildOrder = false;
 
       while (!projectsWithUnmetDependencies.isEmpty() && !noProjectsCanBeAddedToBuildOrder) {
@@ -83,7 +60,7 @@ public class BuildOrderManager {
             }
 
             if (dependencies.isEmpty()) {
-              buildOrder.add(projectToPossiblyAddToBuildOrder);
+              validOrder.add(projectToPossiblyAddToBuildOrder);
               projectsWithUnmetDependencies.clear(dmIdx);
               atLeastOneProjectAddedToBuildOrder = true;
             }
@@ -93,15 +70,27 @@ public class BuildOrderManager {
       }
 
       if (projectsWithUnmetDependencies.isEmpty()) {
-        return buildOrder;
+        return validOrder;
       }
     }
 
-    // no valid build order - i.e., no projects with zero dependencies to start, or no way to resolve all dependencies for every project
+    // no valid build order - must be a cycle in the dependency graph
     return Collections.emptyList();
   }
 
-  private static class ProjectPair {
+  private void verifyDependency(ProjectPair pp, Map<Character, Integer> projectIndices) {
+    if (!projectIndices.containsKey(pp.dependency)) {
+      throw new IllegalArgumentException("provided list of dependencies contains an entry ('" + pp.dependency
+              + "') that is not included in the projects list as expected");
+    }
+
+    if (!projectIndices.containsKey(pp.dependentProject)) {
+      throw new IllegalArgumentException("provided list of dependencies contains an entry ('" + pp.dependentProject
+              + "' that is not included in the projects list as expected");
+    }
+  }
+
+  public static class ProjectPair {
     private char dependentProject;
     private char dependency;
     private static Pattern validationRegex = Pattern.compile("([a-z]|[A-Z]){1}");
