@@ -1,1 +1,1 @@
-The folder contains an implementation of a binary heap that always has the minimum element at its root.  Elements to be inserted must implement the Comparable interface so that the heap code can determine a correct ordering between elements.
+The folder contains an implementation of a binary heap that.  Elements to be inserted must implement the Comparable interface so that the heap code can determine a correct ordering between elements.  The ordering of the elements returned by remove() is ascending by default, or it can be specified by using the proper constructor

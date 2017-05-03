@@ -72,9 +72,17 @@ public class BinaryHeap<T extends Comparable<T>> {
         }
     }
 
-    public T removeMin() {
+    /**
+     * Removes and returns the root element from the BinaryHeap.  Depending on the ordering specified during
+     * the BinaryHeap's construction this will either be the minimum or maximum element remaining in the heap
+     * according to the elements' natural ordering
+     *
+     * @return the minimum or maximum element remaining in the BinaryHeap, depending on the ordering specified
+     * at construction (HeapOrder.ASC or HeapOrder.DESC)
+     */
+    public T remove() {
         if (isEmpty()) {
-            throw new IllegalStateException("removeMin() called on BinaryHeap while it is currently empty");
+            throw new IllegalStateException("remove() called on BinaryHeap while it is currently empty");
         }
 
         T result = nodes.get(0); // this is what we'll return at the end of this method

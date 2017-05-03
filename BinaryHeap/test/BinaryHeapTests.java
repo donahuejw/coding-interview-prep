@@ -29,7 +29,7 @@ public class BinaryHeapTests {
         BinaryHeap<Integer> heap = new BinaryHeap<>();
         heap.insert(10);
 
-        assertThat(10, equalTo(heap.removeMin()));
+        assertThat(10, equalTo(heap.remove()));
         assertTrue(heap.isEmpty());
     }
 
@@ -48,8 +48,8 @@ public class BinaryHeapTests {
 
         int lastRemoved = Integer.MIN_VALUE;
         while (!heap.isEmpty()) {
-            Integer currentValue = heap.removeMin();
-            assertTrue("removeMin() incorrectly returned " + lastRemoved + " before " + currentValue,
+            Integer currentValue = heap.remove();
+            assertTrue("remove() incorrectly returned " + lastRemoved + " before " + currentValue,
                     lastRemoved < currentValue);
             lastRemoved = currentValue;
         }
@@ -62,8 +62,8 @@ public class BinaryHeapTests {
         heap.insert(10);
         heap.insert(10);
 
-        assertThat(10, equalTo(heap.removeMin()));
-        assertThat(10, equalTo(heap.removeMin()));
+        assertThat(10, equalTo(heap.remove()));
+        assertThat(10, equalTo(heap.remove()));
         assertTrue(heap.isEmpty());
     }
 
@@ -73,12 +73,12 @@ public class BinaryHeapTests {
 
         boolean failedAsExpected = false;
         try {
-            heap.removeMin();
+            heap.remove();
         } catch (IllegalStateException e) {
             failedAsExpected = true;
         }
 
-        assertTrue("removeMin() method call did not fail as expected", failedAsExpected);
+        assertTrue("remove() method call did not fail as expected", failedAsExpected);
     }
 
     @Test
@@ -88,9 +88,9 @@ public class BinaryHeapTests {
 
         IntStream.range(0,50).forEach(i -> heap.insert(r.nextInt(100)+1));
 
-        int lastNumberReturned = heap.removeMin();
+        int lastNumberReturned = heap.remove();
         while (!heap.isEmpty()) {
-            int nextNumber = heap.removeMin();
+            int nextNumber = heap.remove();
             assertTrue("BinaryHeap incorrectly returned " + lastNumberReturned + " before " + nextNumber, lastNumberReturned <= nextNumber);
             lastNumberReturned = nextNumber;
         }
@@ -103,9 +103,9 @@ public class BinaryHeapTests {
 
         IntStream.range(0,50).forEach(i -> heap.insert(r.nextInt(100)+1));
 
-        int lastNumberReturned = heap.removeMin();
+        int lastNumberReturned = heap.remove();
         while (!heap.isEmpty()) {
-            int nextNumber = heap.removeMin();
+            int nextNumber = heap.remove();
             assertTrue("BinaryHeap incorrectly returned " + lastNumberReturned + " before " + nextNumber, lastNumberReturned >= nextNumber);
             lastNumberReturned = nextNumber;
         }
@@ -117,11 +117,11 @@ public class BinaryHeapTests {
         BinaryHeap<Integer> heap = new BinaryHeap<>();
 
         heap.insertAll(testData);
-        assertThat(10, equalTo(heap.removeMin()));
-        assertThat(20, equalTo(heap.removeMin()));
-        assertThat(30, equalTo(heap.removeMin()));
-        assertThat(40, equalTo(heap.removeMin()));
-        assertThat(50, equalTo(heap.removeMin()));
+        assertThat(10, equalTo(heap.remove()));
+        assertThat(20, equalTo(heap.remove()));
+        assertThat(30, equalTo(heap.remove()));
+        assertThat(40, equalTo(heap.remove()));
+        assertThat(50, equalTo(heap.remove()));
         assertTrue(heap.isEmpty());
     }
 }
