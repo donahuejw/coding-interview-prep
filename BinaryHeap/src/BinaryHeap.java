@@ -2,11 +2,12 @@ import com.google.common.base.Preconditions;
 
 import java.util.*;
 
-public class BinaryHeap<T extends Comparable<T>> {
+public class BinaryHeap<T> {
 
     private static final int DEFAULT_INITIAL_CAPACITY = 100;
     private List<T> nodes;
     private HeapOrder ordering;
+    private Comparator<? super T> comparator;
 
     public enum HeapOrder {
         ASC(1),
@@ -19,38 +20,52 @@ public class BinaryHeap<T extends Comparable<T>> {
         }
     }
 
-
     /**
-     * Constructs a heap with a default ordering of ascending and a default size of DEFAULT_INITIAL_CAPACITY
-     */
-    public BinaryHeap() {
-        this(DEFAULT_INITIAL_CAPACITY);
-    }
-
-    /**
-     * Constructs a heap with the DEFAULT_INITIAL_CAPACITY and provided ordering
+     * Constructs a heap that uses the provided sort order (ascending or descending) and
+     * the elements' natural ordering.  If the elements' type does not extend
+     * {@link java.lang.Comparable} a ClassCastException will be thrown when inserting
+     * or removing elements
      * @param ordering desired ordering of the returned elements (ascending or descending)
      */
     public BinaryHeap(HeapOrder ordering) {
-        this(DEFAULT_INITIAL_CAPACITY, ordering);
-    }
-
-    /**
-     * Constructs a heap with the indicated initial capacity, ordered in ascending order
-     * @param initialCapacity desired initial capacity for the heap
-     */
-    public BinaryHeap(int initialCapacity) {
-        this(initialCapacity, HeapOrder.ASC);
-    }
-
-    /**
-     * Constructs a heap with the indicated initial capacity and desired element ordering
-     * @param initialCapacity desired initial capacity for the heap
-     * @param ordering desired ordering of the returned elements (ascending or descending)
-     */
-    public BinaryHeap(int initialCapacity, HeapOrder ordering) {
-        nodes = new ArrayList<>(initialCapacity);
+        nodes = new ArrayList<>(DEFAULT_INITIAL_CAPACITY);
         this.ordering = ordering;
+        this.comparator = null;
+
+    }
+
+    /**
+     * Constructs a BinaryHeap that provides a comparator to user for ordering the elements returned by
+     * calls to the remove() method, rather than their natural ordering if they have one, and
+     * also sorts them in the provided direction (ascending or descending)
+     * @param comparator Comparator to use for ordering elements returned by calls to remove()
+     * @param ordering HeapOrder to specify the sort order for elements returned by calls to remove()
+     */
+    public BinaryHeap(Comparator<? super T> comparator, HeapOrder ordering) {
+        this(ordering);
+        this.comparator = comparator;
+    }
+
+    /**
+     * Constructs a heap that will order elements returned by calls to remove()
+     * by their natural ordering, with a default sort order of ascending.
+     * A ClassCastException will be thrown when inserting or removing elements
+     * If the elements' type does not implement {@link java.lang.Comparable}
+     */
+    public BinaryHeap() {
+        this(HeapOrder.ASC);
+        this.comparator = null;
+    }
+
+    /**
+     * Constructs a BinaryHeap that provides a comparator to user for ordering the elements returned by
+     * calls to the remove() method, rather than their natural ordering if they have one.  Returned elements
+     * will be sorted in ascending order
+     * @param comparator Comparator to use for ordering elements returned by calls to remove()
+     */
+    public BinaryHeap(Comparator<? super T> comparator) {
+        this();
+        this.comparator = comparator;
     }
 
 
@@ -197,6 +212,10 @@ public class BinaryHeap<T extends Comparable<T>> {
     }
 
     private int compare(T e1, T e2) {
-        return ordering.orderModifier * e1.compareTo(e2);
+        if (this.comparator != null) {
+            return ordering.orderModifier * this.comparator.compare(e1, e2);
+        } else {
+            return ordering.orderModifier * ((Comparable) e1).compareTo(e2);
+        }
     }
 }

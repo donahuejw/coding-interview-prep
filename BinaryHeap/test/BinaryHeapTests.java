@@ -124,4 +124,41 @@ public class BinaryHeapTests {
         assertThat(50, equalTo(heap.remove()));
         assertTrue(heap.isEmpty());
     }
+
+    @Test
+    public void CustomComparatorWithAscSortTest() throws Exception {
+        List<Integer> expectedOrderOfRemoval = Lists.newArrayList(2,4,6,8,10,12,1,3,5,7,9,11);
+        testCustomComparator(BinaryHeap.HeapOrder.ASC, expectedOrderOfRemoval);
+    }
+
+    @Test
+    public void CustomComparatorWithDescSortTest() throws Exception {
+        List<Integer> expectedOrderOfRemoval = Lists.newArrayList(11,9,7,5,3,1,12,10,8,6,4,2);
+        testCustomComparator(BinaryHeap.HeapOrder.DESC, expectedOrderOfRemoval);
+    }
+
+    private void testCustomComparator(BinaryHeap.HeapOrder sortOrder, List<Integer> expected) {
+        List<Integer> testData = Lists.newArrayList(1,2,3,4,5,6,7,8,9,10,11,12);
+
+        Comparator<Integer> evenFirstComparator = (o1, o2) -> {
+            boolean isO1Even = (o1 % 2 == 0);
+            boolean isO2Even = (o2 % 2 == 0);
+
+            if (isO1Even && !isO2Even) {
+                return -1;
+            } else if (isO2Even && !isO1Even) {
+                return 1;
+            } else {
+                return Integer.compare(o1, o2);
+            }
+        };
+
+        BinaryHeap<Integer> heap = new BinaryHeap<>(evenFirstComparator, sortOrder);
+        heap.insertAll(testData);
+
+        int idx = 0;
+        while(!heap.isEmpty()) {
+            assertEquals(expected.get(idx++), heap.remove());
+        }
+    }
 }
