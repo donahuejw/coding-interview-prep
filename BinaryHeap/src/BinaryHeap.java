@@ -35,7 +35,7 @@ public class BinaryHeap<T> {
     }
 
     /**
-     * Constructs a BinaryHeap that provides a comparator to user for ordering the elements returned by
+     * Constructs a BinaryHeap that provides a comparator to use for ordering the elements returned by
      * calls to the remove() method, rather than their natural ordering if they have one, and
      * also sorts them in the provided direction (ascending or descending)
      * @param comparator Comparator to use for ordering elements returned by calls to remove()
@@ -58,7 +58,7 @@ public class BinaryHeap<T> {
     }
 
     /**
-     * Constructs a BinaryHeap that provides a comparator to user for ordering the elements returned by
+     * Constructs a BinaryHeap that provides a comparator to use for ordering the elements returned by
      * calls to the remove() method, rather than their natural ordering if they have one.  Returned elements
      * will be sorted in ascending order
      * @param comparator Comparator to use for ordering elements returned by calls to remove()
