@@ -9,10 +9,10 @@ import java.util.stream.IntStream;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
-public class MinHeapTests {
+public class BinaryHeapTests {
     @Test
     public void InsertWithNullArgThrowsIAE() throws Exception {
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
 
         boolean threwAsExpected = false;
         try {
@@ -26,7 +26,7 @@ public class MinHeapTests {
 
     @Test
     public void AddRemoveOneItemTest() throws Exception {
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
         heap.insert(10);
 
         assertThat(10, equalTo(heap.removeMin()));
@@ -42,7 +42,7 @@ public class MinHeapTests {
 
     private void testWithOrder(List<Integer> testData, Comparator<Integer> comparator) {
         testData.sort(comparator);
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
 
         testData.forEach(heap::insert);
 
@@ -58,7 +58,7 @@ public class MinHeapTests {
 
     @Test
     public void HeapHandlesDupeValuesTest() throws Exception {
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
         heap.insert(10);
         heap.insert(10);
 
@@ -69,7 +69,7 @@ public class MinHeapTests {
 
     @Test
     public void RemoveFromEmptyHeapThrowsExceptionTest() throws Exception {
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
 
         boolean failedAsExpected = false;
         try {
@@ -82,16 +82,31 @@ public class MinHeapTests {
     }
 
     @Test
-    public void LargeInsertAndRemoveTest() throws Exception {
+    public void LargeInsertAndRemoveWithAscendingOrderTest() throws Exception {
         Random r = new Random();
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
 
         IntStream.range(0,50).forEach(i -> heap.insert(r.nextInt(100)+1));
 
         int lastNumberReturned = heap.removeMin();
         while (!heap.isEmpty()) {
             int nextNumber = heap.removeMin();
-            assertTrue("MinHeap incorrectly returned " + lastNumberReturned + " before " + nextNumber, lastNumberReturned <= nextNumber);
+            assertTrue("BinaryHeap incorrectly returned " + lastNumberReturned + " before " + nextNumber, lastNumberReturned <= nextNumber);
+            lastNumberReturned = nextNumber;
+        }
+    }
+
+    @Test
+    public void LargeInsertAndRemoveWithDescendingOrderTest() throws Exception {
+        Random r = new Random();
+        BinaryHeap<Integer> heap = new BinaryHeap<>(BinaryHeap.HeapOrder.DESC);
+
+        IntStream.range(0,50).forEach(i -> heap.insert(r.nextInt(100)+1));
+
+        int lastNumberReturned = heap.removeMin();
+        while (!heap.isEmpty()) {
+            int nextNumber = heap.removeMin();
+            assertTrue("BinaryHeap incorrectly returned " + lastNumberReturned + " before " + nextNumber, lastNumberReturned >= nextNumber);
             lastNumberReturned = nextNumber;
         }
     }
@@ -99,7 +114,7 @@ public class MinHeapTests {
     @Test
     public void InsertAllTest() throws Exception {
         List<Integer> testData = Lists.newArrayList(10,20,30,40,50);
-        MinHeap<Integer> heap = new MinHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
 
         heap.insertAll(testData);
         assertThat(10, equalTo(heap.removeMin()));

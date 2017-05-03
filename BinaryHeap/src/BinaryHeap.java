@@ -2,9 +2,56 @@ import com.google.common.base.Preconditions;
 
 import java.util.*;
 
-public class MinHeap<T extends Comparable<T>> {
+public class BinaryHeap<T extends Comparable<T>> {
 
-    private List<T> nodes = new ArrayList<>();
+    private static final int DEFAULT_INITIAL_CAPACITY = 100;
+    private List<T> nodes;
+    private HeapOrder ordering;
+
+    public enum HeapOrder {
+        ASC(1),
+        DESC(-1);
+
+        private int orderModifier;
+
+        HeapOrder(int orderModifier) {
+            this.orderModifier = orderModifier;
+        }
+    }
+
+
+    /**
+     * Constructs a heap with a default ordering of ascending and a default size of DEFAULT_INITIAL_CAPACITY
+     */
+    public BinaryHeap() {
+        this(DEFAULT_INITIAL_CAPACITY);
+    }
+
+    /**
+     * Constructs a heap with the DEFAULT_INITIAL_CAPACITY and provided ordering
+     * @param ordering desired ordering of the returned elements (ascending or descending)
+     */
+    public BinaryHeap(HeapOrder ordering) {
+        this(DEFAULT_INITIAL_CAPACITY, ordering);
+    }
+
+    /**
+     * Constructs a heap with the indicated initial capacity, ordered in ascending order
+     * @param initialCapacity desired initial capacity for the heap
+     */
+    public BinaryHeap(int initialCapacity) {
+        this(initialCapacity, HeapOrder.ASC);
+    }
+
+    /**
+     * Constructs a heap with the indicated initial capacity and desired element ordering
+     * @param initialCapacity desired initial capacity for the heap
+     * @param ordering desired ordering of the returned elements (ascending or descending)
+     */
+    public BinaryHeap(int initialCapacity, HeapOrder ordering) {
+        nodes = new ArrayList<>(initialCapacity);
+        this.ordering = ordering;
+    }
 
 
     public boolean isEmpty() {
@@ -20,14 +67,14 @@ public class MinHeap<T extends Comparable<T>> {
         nodes.add(newValue);
 
         if (nodes.size() > 1) {
-            //move new value to proper location in Heap
+            //move new value to proper location in BinaryHeap
             heapify(nodes.size() - 1);
         }
     }
 
     public T removeMin() {
         if (isEmpty()) {
-            throw new IllegalStateException("removeMin() called on Heap while it is currently empty");
+            throw new IllegalStateException("removeMin() called on BinaryHeap while it is currently empty");
         }
 
         T result = nodes.get(0); // this is what we'll return at the end of this method
@@ -52,7 +99,7 @@ public class MinHeap<T extends Comparable<T>> {
         T outOfPlaceNode = nodes.get(outOfPlaceNodeIndex);
 
         int parentIndex = getParentIndex(outOfPlaceNodeIndex);
-        if (isIndexValid(parentIndex) && outOfPlaceNode.compareTo(nodes.get(parentIndex)) <= 0) {
+        if (isIndexValid(parentIndex) && compare(outOfPlaceNode, nodes.get(parentIndex)) <= 0) {
             // node is <= its parent, so need to bubble it up
             bubbleUp(outOfPlaceNodeIndex);
         } else {
@@ -65,27 +112,27 @@ public class MinHeap<T extends Comparable<T>> {
         T nodeToBubbleDown = getNodeSafely(nodeToBubbleDownIndex);
 
         if (nodeToBubbleDown == null) {
-            throw new IllegalArgumentException("nodeToBubbleDownIndex must point to a valid, non-null location in the MinHeap");
+            throw new IllegalArgumentException("nodeToBubbleDownIndex must point to a valid, non-null location in the BinaryHeap");
         }
 
         int leftChildIndex = getLeftChildIndex(nodeToBubbleDownIndex);
         int rightChildIndex = getRightChildIndex(nodeToBubbleDownIndex);
 
-        if ((isIndexValid(leftChildIndex) && nodes.get(leftChildIndex).compareTo(nodeToBubbleDown) <= 0)
-                || (isIndexValid(rightChildIndex) && nodes.get(rightChildIndex).compareTo(nodeToBubbleDown) <= 0)) {
+        if ((isIndexValid(leftChildIndex) && compare(nodes.get(leftChildIndex), nodeToBubbleDown) <= 0)
+                || (isIndexValid(rightChildIndex) && compare(nodes.get(rightChildIndex), nodeToBubbleDown) <= 0)) {
             // node is greater than one of its children, so bubble it down
-            // now, drop down to right location in Heap
+            // now, drop down to right location in BinaryHeap
 
             int finalIndexForNodeToBubbleDown = nodeToBubbleDownIndex;
 
             // Shift nodes up as long as they are greater than the node to bubble down, then once we find where
             // the node to bubble down goes we copy it in.  This saves some copies by avoiding repeated swaps of the
             // node to bubble down
-            while ((isIndexValid(leftChildIndex) && nodeToBubbleDown.compareTo(nodes.get(leftChildIndex)) > 0)
-                    || (isIndexValid(rightChildIndex) && nodeToBubbleDown.compareTo(nodes.get(rightChildIndex)) > 0)) {
+            while ((isIndexValid(leftChildIndex) && compare(nodeToBubbleDown, nodes.get(leftChildIndex)) > 0)
+                    || (isIndexValid(rightChildIndex) && compare(nodeToBubbleDown, nodes.get(rightChildIndex)) > 0)) {
                 if (isIndexValid(leftChildIndex)
                         && (!isIndexValid(rightChildIndex)
-                            || nodes.get(leftChildIndex).compareTo(nodes.get(rightChildIndex))<=0)) {
+                            || compare(nodes.get(leftChildIndex), nodes.get(rightChildIndex))<=0)) {
                     nodes.set(finalIndexForNodeToBubbleDown, nodes.get(leftChildIndex));
                     finalIndexForNodeToBubbleDown = leftChildIndex;
                 } else {
@@ -106,13 +153,13 @@ public class MinHeap<T extends Comparable<T>> {
         // node to bubble up
         T nodeToBubbleUp = getNodeSafely(nodeToBubbleUpIndex);
         if (nodeToBubbleUp == null) {
-            throw new IllegalArgumentException("nodeToBubbleUpIndex must point to a non-null location in the MinHeap");
+            throw new IllegalArgumentException("nodeToBubbleUpIndex must point to a non-null location in the BinaryHeap");
         }
 
         int finalIndexForNodeToBubbleUp = nodeToBubbleUpIndex;
 
         while (isIndexValid(getParentIndex(finalIndexForNodeToBubbleUp))
-                && nodeToBubbleUp.compareTo(nodes.get(getParentIndex(finalIndexForNodeToBubbleUp))) <= 0) {
+                && compare(nodeToBubbleUp, nodes.get(getParentIndex(finalIndexForNodeToBubbleUp))) <= 0) {
             nodes.set(finalIndexForNodeToBubbleUp, nodes.get(getParentIndex(finalIndexForNodeToBubbleUp)));
             finalIndexForNodeToBubbleUp = getParentIndex(finalIndexForNodeToBubbleUp);
         }
@@ -139,5 +186,9 @@ public class MinHeap<T extends Comparable<T>> {
     private int getParentIndex(int child) {
         int intermediateResult = (child - 1);
         return (intermediateResult < 0 ? intermediateResult : intermediateResult / 2);
+    }
+
+    private int compare(T e1, T e2) {
+        return ordering.orderModifier * e1.compareTo(e2);
     }
 }
