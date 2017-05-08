@@ -2,4 +2,4 @@ This class is an implementation of a WeightedGraph, using adjacency lists to sto
 
 a) findPathViaBFS - finds and returns a path between two nodes in the graph via a breadth-first search
 b) findPathViaDFS - finds and returns a path between two nodes in the graph via a depth-first search
-c) computeMinimumSpanningTree - determines and returns the minimum spanning tree for this graph, assuming all edges have a finite weight (in this case < Integer.MAX_VALUE).  The minimum spanning tree is the spanning tree of the graph with the minimum aggregate weight.
+c) computeMinimumSpanningForest - determines and returns the minimum spanning Forest for this graph, assuming all edges have a finite weight (in this case < Integer.MAX_VALUE).  A minimum spanning tree (MST) is the spanning tree of the graph with the minimum aggregate weight.  If the graph is not fully connected then the Minimum Spanning Forest consists of the multiple MSTs that cover all the vertices.
