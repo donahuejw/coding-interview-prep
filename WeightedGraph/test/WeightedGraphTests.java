@@ -93,10 +93,10 @@ public class WeightedGraphTests {
     }
 
     @Test
-    public void buildMSTForSimpleGraphTest() {
+    public void buildMSFForSimpleGraphTest() {
         WeightedGraph wg = buildSimpleGraph();
 
-        List<WeightedGraph.Edge> mst = wg.computeMinimumSpanningTree();
+        List<WeightedGraph.Edge> mst = wg.computeMinimumSpanningForest().get(0);
         assertThat(mst, hasItems(
                 new WeightedGraph.Edge(wg.getVertex('a'), wg.getVertex('d')),
                 new WeightedGraph.Edge(wg.getVertex('a'), wg.getVertex('b')),
@@ -104,14 +104,13 @@ public class WeightedGraphTests {
                 new WeightedGraph.Edge(wg.getVertex('e'), wg.getVertex('c')),
                 new WeightedGraph.Edge(wg.getVertex('e'), wg.getVertex('f'))
         ));
-
     }
 
     @Test
-    public void buildMSTForComplexGraphTest() {
+    public void buildMSFForComplexGraphTest() {
         WeightedGraph wg = buildComplexGraph();
 
-        List<WeightedGraph.Edge> mst = wg.computeMinimumSpanningTree();
+        List<WeightedGraph.Edge> mst = wg.computeMinimumSpanningForest().get(0);
         assertThat(mst, hasItems(
                 new WeightedGraph.Edge(wg.getVertex('a'), wg.getVertex('c')),
                 new WeightedGraph.Edge(wg.getVertex('c'), wg.getVertex('b')),
@@ -126,6 +125,44 @@ public class WeightedGraphTests {
                 new WeightedGraph.Edge(wg.getVertex('g'), wg.getVertex('h'))
         ));
 
+    }
+
+    @Test
+    public void buildMSFForDisconnectedGraphTest() {
+        WeightedGraph wg = buildSimpleGraph();
+
+        // now, add disconnected sub-graph to this graph
+
+        wg.addEdge('g','h', 4);
+        wg.addEdge('g','i', 5);
+        wg.addEdge('i', 'h', 1);
+
+        List<List<WeightedGraph.Edge>> msf = wg.computeMinimumSpanningForest();
+
+        assertEquals(2, msf.size());
+
+        List<WeightedGraph.Edge> mst1 = msf.get(0);
+        List<WeightedGraph.Edge> mst2 = msf.get(1);
+
+        assertThat(mst1, hasItems(
+                new WeightedGraph.Edge(wg.getVertex('a'), wg.getVertex('d')),
+                new WeightedGraph.Edge(wg.getVertex('a'), wg.getVertex('b')),
+                new WeightedGraph.Edge(wg.getVertex('b'), wg.getVertex('e')),
+                new WeightedGraph.Edge(wg.getVertex('e'), wg.getVertex('c')),
+                new WeightedGraph.Edge(wg.getVertex('e'), wg.getVertex('f'))
+        ));
+
+        assertThat(mst2, hasItems(
+                new WeightedGraph.Edge(wg.getVertex('g'), wg.getVertex('h')),
+                new WeightedGraph.Edge(wg.getVertex('h'), wg.getVertex('i'))
+        ));
+    }
+
+    @Test
+    public void buildMSFForEmptyGraphReturnsEmptyListTest() throws Exception {
+        WeightedGraph wg = new WeightedGraph();
+        List<List<WeightedGraph.Edge>> msf = wg.computeMinimumSpanningForest();
+        assertTrue(msf.isEmpty());
     }
 
 

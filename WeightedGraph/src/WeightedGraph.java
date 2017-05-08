@@ -1,4 +1,5 @@
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 
 import java.util.*;
 
@@ -218,46 +219,58 @@ public class WeightedGraph {
         return path;
     }
 
-    public List<Edge> computeMinimumSpanningTree() {
-        // this method utilizes Prim's Algorithm to compute the MST
+    public List<List<Edge>> computeMinimumSpanningForest() {
+        // this method utilizes Prim's Algorithm to compute the Minimum Spanning Forest (MSF) for this graph.
+        // If the graph is connected then the forest will consist of a single Minimum Spanning Tree (MST),
+        // otherwise it will consist of the union of the MSTs covering all the graph's vertices.
         // (https://en.wikipedia.org/wiki/Prim%27s_algorithm)
-        List<Edge> mst = new LinkedList<>();
+
+        List<List<Edge>> msf = new LinkedList<>();
         int numVertices = vertices.size();
         if (vertices.size() == 0) {
             System.out.println("graph is empty, so no MST exists");
             return Collections.emptyList();
         }
 
-        Set<Vertex> inTheTree = new HashSet<>();
+        Set<Vertex> inTheForest = new HashSet<>();
         PriorityQueue<Edge> pq = new PriorityQueue<>(numVertices*2, (e1,e2) -> Integer.compare(e1.weight, e2.weight));
 
         Vertex currentVertex = vertices.values().iterator().next();
-        inTheTree.add(currentVertex);
+        inTheForest.add(currentVertex);
 
-        while (inTheTree.size() < numVertices) {
-            List<Edge> outboundEdges = adjacencyLists.get(currentVertex);
-            outboundEdges.stream().filter(e -> !inTheTree.contains(e.endVertex)).forEach(e -> pq.offer(e));
-            Edge newEdgeForMST = null;
-            do {
-                newEdgeForMST = pq.remove();
-            } while (!pq.isEmpty() && inTheTree.contains(newEdgeForMST.endVertex));
+        List<Edge> currentMST = new LinkedList<>();
+        msf.add(currentMST);
 
-            if (newEdgeForMST == null) {
-                //no edges in the tree are to vertices that are not already part of the mst
-                break;
+        do {
+            while (inTheForest.size() < numVertices) {
+                List<Edge> outboundEdges = adjacencyLists.get(currentVertex);
+                outboundEdges.stream().filter(e -> !inTheForest.contains(e.endVertex)).forEach(e -> pq.offer(e));
+                Edge newEdgeForMST = null;
+                do {
+                    newEdgeForMST = (!pq.isEmpty()) ? pq.remove() : null;
+                } while (!pq.isEmpty() && inTheForest.contains(newEdgeForMST.endVertex));
+
+                if (newEdgeForMST == null) {
+                    //no edges in the tree are to vertices that are not already part of the mst
+                    break;
+                }
+
+                currentMST.add(newEdgeForMST);
+                currentVertex = newEdgeForMST.endVertex;
+                inTheForest.add(currentVertex);
             }
 
-            mst.add(newEdgeForMST);
-            currentVertex = newEdgeForMST.endVertex;
-            inTheTree.add(currentVertex);
-        }
+            if (inTheForest.size() < numVertices) {
+                // graph must not be fully connected, so pick a vertex not yet in the MSF and restart from there
+                Sets.SetView<Vertex> verticesNotYetInForest = Sets.difference(getVertices(), inTheForest);
+                currentVertex = verticesNotYetInForest.iterator().next();
+                currentMST = new LinkedList<>();
+                msf.add(currentMST);
+                pq.clear();
+            }
+        } while (inTheForest.size() < numVertices);
 
-        if (inTheTree.size() < numVertices) {
-            System.out.println("Unable to compute MST for this graph");
-            return Collections.emptyList();
-        }
-
-        return mst;
+        return msf;
     }
 
     private List<Vertex> buildPathStartingFromEnd(Vertex end, Map<Vertex, Vertex> pathTrackerMap) {
