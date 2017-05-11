@@ -36,57 +36,15 @@ public class UnrolledLinkedList<E> {
         Node<E> current = head;
         int bucketsThusFar = 0;
 
-        while (current != null && bucketsThusFar + current.size <= index) {
+        while (bucketsThusFar + current.size <= index) {
             bucketsThusFar += current.size;
             current = current.next;
         }
 
         // current should now hold reference to Node that contains our desired element
-        int indexInNode = (bucketsThusFar == 0 ? index : index % bucketsThusFar);
+        int indexInNode = index - bucketsThusFar;
         return current.values.get(indexInNode);
     }
-
-
-/*
-    public void set(int index, E value) {
-        if (index >= this.size) {
-            throw new IllegalArgumentException("Specified index: " + index + " is larger than current size of the list: " + size);
-        }
-
-        Node<E> current = head;
-        int bucketsThusFar = 0;
-
-        while (current != null && bucketsThusFar + current.size <= index) {
-            bucketsThusFar += DEFAULT_MAX_NODE_SIZE;
-            current = current.next;
-        }
-
-        if (current == null) {
-            throw new ArrayIndexOutOfBoundsException("Cannot insert a new element beyond the end of the current linked list");
-        }
-
-        int indexInNode = (bucketsThusFar == 0) ? index : index % bucketsThusFar;
-
-        if (indexInNode < current.size) {
-            // move elements that would have to be shifted to a new node
-            Node<E> newNode = new Node<>();
-
-            int indexInNewNode = 0;
-            for (int idx = indexInNode; idx < current.size; idx++) {
-                newNode.values.set(indexInNewNode++, current.values.get(idx));
-                newNode.size += 1;
-            }
-            current.size -= (current.size - indexInNode);
-            newNode.next = current.next;
-            current.next = newNode;
-        }
-
-        current.values.set(indexInNode, value);
-        current.size += 1;
-
-        this.size += 1;
-    }
-*/
 
     public boolean add(E value) {
         Node<E> current = head;
@@ -98,10 +56,9 @@ public class UnrolledLinkedList<E> {
         }
 
         // at this point current should be the final node in the UnrolledLinkedList
-        if (current.size == (DEFAULT_MAX_NODE_SIZE/2)) {
-            Node<E> newNode = new Node<>(this.maxNodeSize);
-            current.next = newNode;
-            current = newNode;
+        if (current.size == maxNodeSize) {
+            splitNode(current);
+            current = current.next;
         }
 
         current.values.add(value);
@@ -110,6 +67,7 @@ public class UnrolledLinkedList<E> {
 
         return true;
     }
+
 
     public void add(int index, E value) {
         if (index >= this.size) {
@@ -129,18 +87,15 @@ public class UnrolledLinkedList<E> {
                     "the current end of the list. Use the add(value) method instead to add it at the end of the list");
         }
 
-        if (current.size >= maxNodeSize/2) {
-            Node<E> newNode = new Node<>(maxNodeSize);
-            Node<E> currentNext = current.next;
-
-            current.next = newNode;
-            newNode.next = currentNext;
-            newNode.size = 1;
-            newNode.values.add(current.values.get(current.size-1));
-            --current.size;
+        if (current.size == maxNodeSize) {
+            splitNode(current);
+            if ((index-totalElems)>current.size) {
+                totalElems += current.size;
+                current = current.next;
+            }
         }
 
-        int nodeLocalIndex = safeMod(index, totalElems);
+        int nodeLocalIndex = index - totalElems;
 
         ++current.size;
         ++this.size;
@@ -151,8 +106,20 @@ public class UnrolledLinkedList<E> {
         return size;
     }
 
-    private int safeMod(int numerator, int denominator) {
-        return (denominator == 0 ? numerator : numerator % denominator);
+    private void splitNode(Node<E> current) {
+        // create new node and fix up linked list pointers
+        Node<E> newNode = new Node<>(this.maxNodeSize);
+        newNode.next = current.next;
+        current.next = newNode;
+
+        // move 1/2 values in current node to new node
+        int numItemsToMove = current.size - current.size/2;
+        int indexToRemoveFrom = current.size/2;
+        for (int i=1; i<=numItemsToMove; i++) {
+            newNode.values.add(current.values.remove(indexToRemoveFrom));
+            ++newNode.size;
+            --current.size;
+        }
     }
 
     @Override

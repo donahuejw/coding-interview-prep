@@ -22,7 +22,7 @@ public class UnrolledLinkedListTests {
 
     @Test
     public void addAndGetItemsThatRollIntoSecondNodeTest() throws Exception {
-        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(8);
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
         ull.add(10);
         ull.add(20);
         ull.add(30);
@@ -39,7 +39,7 @@ public class UnrolledLinkedListTests {
 
     @Test
     public void addAndGetItemsThatRollIntoThirdNodeTest() throws Exception {
-        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(8);
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
         ull.add(10);
         ull.add(20);
         ull.add(30);
@@ -47,10 +47,10 @@ public class UnrolledLinkedListTests {
         ull.add(50);
         ull.add(60);
         ull.add(70);
-        ull.add(80);
-        ull.add(90);
 
-        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40,50,60,70,80,90), ull);
+        // at this point, list structure should be:
+        // 10, 20 --> 30,40 --> 50,60,70
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40,50,60,70), ull);
 
         // also assert that we have two nodes now
         assertNotNull("Expecting there to be a second node", ull.head.next);
@@ -73,8 +73,8 @@ public class UnrolledLinkedListTests {
     }
 
     @Test
-    public void addAtSpecificIndexWhileExceedingHalfwayMarkShiftsToNewNodeTest() throws Exception {
-        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(8);
+    public void addAtSpecificIndexWithinAlreadyFullNodeShiftsHalfOfElementsToNewNodeTest() throws Exception {
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
         ull.add(10);
         ull.add(20);
         ull.add(30);
@@ -90,10 +90,100 @@ public class UnrolledLinkedListTests {
         assertNull("only expecting two nodes in list", ull.head.next.next);
 
         // first node should have 4 elements, 2nd should have 1
-        assertEquals(4, ull.head.size);
-        assertEquals(1, ull.head.next.size);
+        assertEquals(3, ull.head.size);
+        assertEquals(2, ull.head.next.size);
 
         assertEquals(5, ull.getSize());
+    }
+
+    @Test
+    public void addAtIndexInFirstHalfOfFullNodeWorksWithEvenMaxNodeSizeTest() throws Exception {
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
+        ull.add(10);
+        ull.add(20);
+        ull.add(30);
+        ull.add(40);
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40), ull);
+
+        ull.add(1, 15); //list should now be 10,15,20 --> 30,40
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,15,20,30,40), ull);
+        //list should have two nodes of 3 and 2 elements
+        assertEquals(3, ull.head.size);
+        assertNotNull(ull.head.next);
+        assertEquals(2, ull.head.next.size);
+
+        // no further nodes
+        assertNull(ull.head.next.next);
+    }
+
+    @Test
+    public void addAtIndexInSecondHalfOfFullNodeWorksWithEvenMaxNodeSizeTest() throws Exception {
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
+        ull.add(10);
+        ull.add(20);
+        ull.add(30);
+        ull.add(40);
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40), ull);
+
+        ull.add(3, 35); //list should now be 10,20 --> 30,35,40
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,35,40), ull);
+        //list should have two nodes of 2 and 3 elements
+        assertEquals(2, ull.head.size);
+        assertNotNull(ull.head.next);
+        assertEquals(3, ull.head.next.size);
+
+        // no further nodes
+        assertNull(ull.head.next.next);
+    }
+
+    @Test
+    public void addAtIndexInFirstHalfOfFullNodeWorksWithOddMaxNodeSizeTest() throws Exception {
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(5);
+        ull.add(10);
+        ull.add(20);
+        ull.add(30);
+        ull.add(40);
+        ull.add(50);
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40,50), ull);
+
+        ull.add(1, 15); //list should now be 10,15,20 --> 30,40,50
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,15,20,30,40,50), ull);
+        //list should have two nodes of 3 elements each
+        assertEquals(3, ull.head.size);
+        assertNotNull(ull.head.next);
+        assertEquals(3, ull.head.next.size);
+
+        // no further nodes
+        assertNull(ull.head.next.next);
+    }
+
+    @Test
+    public void addAtIndexInSecondHalfOfFullNodeWorksWithOddMaxNodeSizeTest() throws Exception {
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(5);
+        ull.add(10);
+        ull.add(20);
+        ull.add(30);
+        ull.add(40);
+        ull.add(50);
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40,50), ull);
+
+        ull.add(3, 35); //list should now be 10,20 --> 30,35,40,50
+
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,35,40,50), ull);
+        //list should have two nodes of 2 elements and 4 elements
+        assertEquals(2, ull.head.size);
+        assertNotNull(ull.head.next);
+        assertEquals(4, ull.head.next.size);
+
+        // no further nodes
+        assertNull(ull.head.next.next);
     }
 
     @Test
@@ -109,8 +199,8 @@ public class UnrolledLinkedListTests {
         ull.add(5, 35);
         ull.add(7, 45);
 
-        // nodes' contents should now be
-        // 10,15,20,25 --> 30 --> 35,40 --> 45,50
+        // List's structure should now be
+        // 10,15,20,25 --> 30,35,40,45,50
 
         checkExpectedContentsInOrder(Lists.newArrayList(10,15,20,25,30,35,40,45,50), ull);
 
@@ -119,18 +209,14 @@ public class UnrolledLinkedListTests {
 
         // 2nd node
         assertNotNull(ull.head.next);
-        assertEquals(1, ull.head.next.size);
+        assertEquals(5, ull.head.next.size);
 
-        // 3rd node
-        assertNotNull(ull.head.next.next);
-        assertEquals(2, ull.head.next.next.size);
+        // No 3rd node
+        assertNull(ull.head.next.next);
 
-        // 4th node
-        assertNotNull(ull.head.next.next.next);
-        assertEquals(2, ull.head.next.next.next.size);
-
-        assertNull(ull.head.next.next.next.next);
+        assertEquals(9, ull.getSize());
     }
+
 
     private void checkExpectedContentsInOrder(List<Integer> expected, UnrolledLinkedList<Integer> ull) {
         int i = 0;
