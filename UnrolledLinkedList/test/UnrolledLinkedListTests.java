@@ -217,6 +217,8 @@ public class UnrolledLinkedListTests {
         assertEquals(9, ull.getSize());
     }
 
+    // TODO - add some tests around the splitNode() method
+
 
     private void checkExpectedContentsInOrder(List<Integer> expected, UnrolledLinkedList<Integer> ull) {
         int i = 0;

@@ -106,7 +106,7 @@ public class UnrolledLinkedList<E> {
         return size;
     }
 
-    private void splitNode(Node<E> current) {
+    void splitNode(Node<E> current) {
         // create new node and fix up linked list pointers
         Node<E> newNode = new Node<>(this.maxNodeSize);
         newNode.next = current.next;
