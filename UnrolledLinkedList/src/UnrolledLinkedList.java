@@ -9,11 +9,11 @@ public class UnrolledLinkedList<E> {
 
     static class Node<E> {
         int size;
-        List<E> values;
+        E[] values;
         Node<E> next;
 
         Node(int maxNodeSize) {
-            values = new ArrayList<>(maxNodeSize);
+            values = (E[]) new Object[maxNodeSize];
             next = null;
             size = 0;
         }
@@ -43,7 +43,7 @@ public class UnrolledLinkedList<E> {
 
         // current should now hold reference to Node that contains our desired element
         int indexInNode = index - bucketsThusFar;
-        return current.values.get(indexInNode);
+        return current.values[indexInNode];
     }
 
     public boolean add(E value) {
@@ -61,7 +61,7 @@ public class UnrolledLinkedList<E> {
             current = current.next;
         }
 
-        current.values.add(value);
+        current.values[current.size] = value;
         ++current.size;
         ++this.size;
 
@@ -99,7 +99,17 @@ public class UnrolledLinkedList<E> {
 
         ++current.size;
         ++this.size;
-        current.values.add(nodeLocalIndex, value);
+
+        // Check whether new element is being inserted in middle of node's array of
+        // values, in which case we need to shift some values to make room
+        if (nodeLocalIndex < current.size-1) {
+            int indexToShift = current.size-2;
+            do {
+                current.values[indexToShift+1] = current.values[indexToShift];
+                indexToShift--;
+            } while (indexToShift >= nodeLocalIndex);
+        }
+        current.values[nodeLocalIndex] = value;
     }
 
     public int getSize() {
@@ -114,9 +124,10 @@ public class UnrolledLinkedList<E> {
 
         // move 1/2 values in current node to new node
         int numItemsToMove = current.size - current.size/2;
-        int indexToRemoveFrom = current.size/2;
-        for (int i=1; i<=numItemsToMove; i++) {
-            newNode.values.add(current.values.remove(indexToRemoveFrom));
+        int indexToStartRemove = current.size/2;
+        for (int indextoRemove = indexToStartRemove; indextoRemove<indexToStartRemove + numItemsToMove; indextoRemove++) {
+            newNode.values[newNode.size] = current.values[indextoRemove];
+            current.values[indextoRemove] = null;
             ++newNode.size;
             --current.size;
         }
@@ -131,9 +142,9 @@ public class UnrolledLinkedList<E> {
             sb.append("size: ").append(current.size).append("; ");
             sb.append("{");
             for (int idx = 0; idx < current.size - 1; idx++) {
-                sb.append(current.values.get(idx)).append(",");
+                sb.append(current.values[idx]).append(",");
             }
-            sb.append(current.values.get(current.size - 1)).append("}");
+            sb.append(current.values[current.size - 1]).append("}");
 
             current = current.next;
             if (current != null) {
