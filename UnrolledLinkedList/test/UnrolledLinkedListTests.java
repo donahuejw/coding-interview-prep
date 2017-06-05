@@ -1,11 +1,10 @@
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class UnrolledLinkedListTests {
     @Test
@@ -93,7 +92,7 @@ public class UnrolledLinkedListTests {
         assertEquals(3, ull.head.size);
         assertEquals(2, ull.head.next.size);
 
-        assertEquals(5, ull.getSize());
+        assertEquals(5, ull.size());
     }
 
     @Test
@@ -214,7 +213,30 @@ public class UnrolledLinkedListTests {
         // No 3rd node
         assertNull(ull.head.next.next);
 
-        assertEquals(9, ull.getSize());
+        assertEquals(9, ull.size());
+    }
+
+    @Test
+    public void testAddAllAddsAllElementsInCollectionToEmptyListTest() throws Exception {
+        List<Integer> listToAdd = Lists.newArrayList(10, 20, 30, 40);
+
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
+
+        assertTrue(ull.isEmpty());
+        assertTrue(ull.addAll(listToAdd));
+        checkExpectedContentsInOrder(Lists.newArrayList(10,20,30,40), ull);
+    }
+
+    @Test
+    public void testAddAllAddsAllElementsInCollectionToNonEmptyListTest() throws Exception {
+        List<Integer> listToAdd = Lists.newArrayList(20, 30, 40);
+
+        UnrolledLinkedList<Integer> ull = new UnrolledLinkedList<>(4);
+        ull.add(10);
+        ull.add(15);
+        assertFalse(ull.isEmpty());
+        assertTrue(ull.addAll(listToAdd));
+        checkExpectedContentsInOrder(Lists.newArrayList(10,15,20,30,40), ull);
     }
 
     // TODO - add some tests around the splitNode() method
